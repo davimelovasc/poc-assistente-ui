@@ -11,6 +11,7 @@
         .form-group { margin-bottom: 15px; }
         #status { margin-top: 10px; font-weight: bold; color: #007bff; }
         #responseContainer { margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 5px; }
+        #timer { font-weight: bold; color: red; }
     </style>
 </head>
 <body>
@@ -30,9 +31,10 @@
                 <button type="button" id="stopRecord" class="btn btn-danger" disabled>Parar Gravação</button>
             </div>
             <p id="status" class="text-center">Aguardando gravação...</p>
+            <p id="timer" class="text-center">00:00</p>
             <audio id="audioPlayer" controls class="w-100 mt-2"></audio>
             <br>
-            <button type="submit" class="btn btn-success w-100 mt-3">Enviar</button>
+            <button type="submit" id="submitBtn" class="btn btn-success w-100 mt-3">Enviar</button>
         </form>
         <div id="responseContainer" class="d-none"></div>
     </div>
@@ -41,6 +43,15 @@
         let mediaRecorder;
         let audioChunks = [];
         let audioBlob;
+        let timerInterval;
+        let seconds = 0;
+
+        function updateTimer() {
+            const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const sec = (seconds % 60).toString().padStart(2, '0');
+            document.getElementById("timer").innerText = `${minutes}:${sec}`;
+            seconds++;
+        }
 
         document.getElementById("startRecord").addEventListener("click", async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -58,9 +69,14 @@
             document.getElementById("startRecord").disabled = true;
             document.getElementById("stopRecord").disabled = false;
 
+            seconds = 0;
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+
             setTimeout(() => {
                 if (mediaRecorder.state === "recording") {
                     mediaRecorder.stop();
+                    clearInterval(timerInterval);
                     document.getElementById("status").innerText = "Gravação encerrada.";
                     document.getElementById("startRecord").disabled = false;
                     document.getElementById("stopRecord").disabled = true;
@@ -70,6 +86,7 @@
 
         document.getElementById("stopRecord").addEventListener("click", () => {
             mediaRecorder.stop();
+            clearInterval(timerInterval);
             document.getElementById("status").innerText = "Gravação encerrada.";
             document.getElementById("startRecord").disabled = false;
             document.getElementById("stopRecord").disabled = true;
@@ -84,6 +101,8 @@
             }
 
             document.getElementById("status").innerText = "Enviando... Aguarde";
+            document.getElementById("submitBtn").disabled = true;
+            document.getElementById("submitBtn").innerText = "Enviando...";
             
             const formData = new FormData();
             formData.append("audio", audioBlob, "recording.wav");
@@ -105,6 +124,9 @@
                 document.getElementById("responseContainer").classList.remove("d-none");
                 document.getElementById("responseContainer").innerText = "Erro: " + error.message;
             }
+            
+            document.getElementById("submitBtn").disabled = false;
+            document.getElementById("submitBtn").innerText = "Enviar";
         });
     </script>
 </body>
