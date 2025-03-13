@@ -4,31 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gravação de Áudio</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        #status { margin-top: 10px; font-weight: bold; color: blue; }
-        #responseContainer { margin-top: 20px; }
+        body { background-color: #f8f9fa; padding: 20px; }
+        .container { max-width: 500px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .form-group { margin-bottom: 15px; }
+        #status { margin-top: 10px; font-weight: bold; color: #007bff; }
+        #responseContainer { margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <h2>Gravar Áudio e Enviar</h2>
-    <form id="audioForm">
-        <label for="name">Nome:</label>
-        <input type="text" id="name" name="name" required><br><br>
-        
-        <label for="birthdate">Data de Nascimento:</label>
-        <input type="date" id="birthdate" name="birthdate" required><br><br>
-        
-        <button type="button" id="startRecord">Gravar Áudio</button>
-        <button type="button" id="stopRecord" disabled>Parar Gravação</button>
-        <p id="status">Aguardando gravação...</p>
-        <audio id="audioPlayer" controls></audio>
-        
-        <br><br>
-        <button type="submit">Enviar</button>
-    </form>
-    
-    <div id="responseContainer"></div>
+    <div class="container">
+        <h2 class="text-center">Gravar Áudio e Enviar</h2>
+        <form id="audioForm">
+            <div class="form-group">
+                <label for="name">Nome:</label>
+                <input type="text" id="name" name="name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="birthdate">Data de Nascimento:</label>
+                <input type="date" id="birthdate" name="birthdate" class="form-control" required>
+            </div>
+            <div class="text-center">
+                <button type="button" id="startRecord" class="btn btn-primary">Gravar Áudio</button>
+                <button type="button" id="stopRecord" class="btn btn-danger" disabled>Parar Gravação</button>
+            </div>
+            <p id="status" class="text-center">Aguardando gravação...</p>
+            <audio id="audioPlayer" controls class="w-100 mt-2"></audio>
+            <br>
+            <button type="submit" class="btn btn-success w-100 mt-3">Enviar</button>
+        </form>
+        <div id="responseContainer" class="d-none"></div>
+    </div>
 
     <script>
         let mediaRecorder;
@@ -84,16 +91,18 @@
             formData.append("birthdate", document.getElementById("birthdate").value);
             
             try {
-                const response = await fetch("https://n8n.srv733432.hstgr.cloud/webhook-test/audio-upload", {
+                const response = await fetch("https://n8n.srv733432.hstgr.cloud/webhook/audio-upload", {
                     method: "POST",
                     body: formData
                 });
                 
                 const responseText = await response.text();
+                document.getElementById("responseContainer").classList.remove("d-none");
                 document.getElementById("responseContainer").innerHTML = responseText;
                 document.getElementById("status").innerText = "Envio concluído!";
             } catch (error) {
                 document.getElementById("status").innerText = "Erro ao enviar.";
+                document.getElementById("responseContainer").classList.remove("d-none");
                 document.getElementById("responseContainer").innerText = "Erro: " + error.message;
             }
         });
